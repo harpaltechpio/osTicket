@@ -96,7 +96,7 @@ if($ticket->isOverdue())
                  class="icon-file-text-alt"></i> <?php echo __('Thread + Internal Notes'); ?></a>
                  <li title="PDF File"><a class="no-pjax" target="_blank" href="tickets.php?id=<?php echo $ticket->getId(); ?>&a=print&notes=1&events=1"><i
                  class="icon-file-text-alt"></i> <?php echo __('Thread + Internal Notes + Events'); ?></a>
-                 <?php// CHANGED!?>
+                 
 
                 <?php if ($cfg->isThreadTime()) { ?>
                  <li><a class="no-pjax" href="timebill.php?id=<?php echo $ticket->getId(); ?>&view=invoice"><i
@@ -106,7 +106,7 @@ if($ticket->isOverdue())
                 <?php } ?> 
 				 <?php if (extension_loaded('zip')) { ?>
                 
-                <?php// CHANGED!?>
+                
 
 
                  <li title="ZIP Archive"><a class="no-pjax" target="_blank" href="tickets.php?id=<?php echo $ticket->getId(); ?>&a=zip&notes=1"><i
@@ -650,7 +650,7 @@ if($ticket->isOverdue())
                     <th nowrap><?php echo __('Last Response');?>:</th>
                     <td><?php echo Format::datetime($ticket->getLastRespDate()); ?></td>
                 </tr>
-                <?php// CHANGED!?>
+                
 
 	            <?php if ($cfg->isThreadTime()) { ?>
                 <tr>
@@ -659,7 +659,7 @@ if($ticket->isOverdue())
                 </tr>
                 <?php } ?>
 
-                <?php// CHANGED!?>
+                
 
                 
             </table>
@@ -1147,7 +1147,8 @@ if ($errors['err'] && isset($_POST['a'])) {
                     </select>
                 </td>
             </tr>
-            <?php// CHANGED!?>
+            
+
 	<?php if ($cfg->isThreadTime()) {
             if($ticket->isOpen()) { ?>
             <tr>
@@ -1183,7 +1184,9 @@ if ($errors['err'] && isset($_POST['a'])) {
                 </td>
             </tr>
             <?php }} ?>
-        <?php// CHANGED!?>
+        
+
+        
          </tbody>
         </table>
         <p  style="text-align:center;">
@@ -1274,7 +1277,10 @@ if ($errors['err'] && isset($_POST['a'])) {
                     &nbsp;<span class='error'>*&nbsp;<?php echo $errors['note_status_id']; ?></span>
                 </td>
             </tr>
-            <?php// CHANGED!?>
+            
+
+
+
 <?php if ($cfg->isThreadTime()) {
             if($ticket->isOpen()) { ?>
             <tr>
@@ -1310,7 +1316,7 @@ if ($errors['err'] && isset($_POST['a'])) {
                 </td>
             </tr>
             <?php }} ?>
-        <?php// CHANGED!?>
+        
 
         </table>
 
@@ -1544,7 +1550,6 @@ function saveDraft() {
         $('#response').redactor('plugin.draft.saveDraft');
 }
 
-       <?php// CHANGED!?>
 // Strobe Technologies Ltd | 22/06/2016 | START - Ticket Time Timer
 <?php if ($cfg->isThreadTimer()) { ?>
 $('input[name=time_spent]').val(0);        // sets default value to 0 minutes
@@ -1576,14 +1581,14 @@ $('i.icon-pause').click(function() {
 });
 <?php } ?>
 // Strobe Technologies Ltd | 22/06/2016 | END - Ticket Time Timer
-        <?php// CHANGED!?>
+
 </script>
 
-<?php// CHANGED!?>
+
 <style>
     i.icon-undo, i.icon-play, i.icon-pause {
         cursor: pointer;
         margin-left: 5px;
     }
 </style>
-<?php// CHANGED!?>
+

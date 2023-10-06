@@ -257,7 +257,9 @@ class AdminNav extends StaffNav{
                     $subnav[]=array('desc'=>__('Agents'),'href'=>'settings.php?t=agents','iconclass'=>'teams');
                     $subnav[]=array('desc'=>__('Users'),'href'=>'settings.php?t=users','iconclass'=>'groups');
                     // CHANGED!
+                   // if ($cfg->isThreadTime()) {
                     $subnav[]=array('desc'=>__('Time'), 'href'=>'settings.php?t=tickettime','iconclass'=>'ticket-settings');
+                    //}
                     // CHANGED!
                     $subnav[]=array('desc'=>__('Knowledgebase'),'href'=>'settings.php?t=kb','iconclass'=>'kb-settings');
                     break;
