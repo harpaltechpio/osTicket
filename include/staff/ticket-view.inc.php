@@ -1566,7 +1566,7 @@ function saveDraft() {
         $('#response').redactor('plugin.draft.saveDraft');
 }
 
-// Strobe Technologies Ltd | 22/06/2016 | START - Ticket Time Timer
+
 <?php if ($cfg->isThreadTimer()) { ?>
 $('input[name=time_spent]').val(0);        // sets default value to 0 minutes
 $('i.icon-play').hide();
@@ -1596,7 +1596,7 @@ $('i.icon-pause').click(function() {
     return false;
 });
 <?php } ?>
-// Strobe Technologies Ltd | 22/06/2016 | END - Ticket Time Timer
+
 
 </script>
 
