@@ -667,142 +667,7 @@ if($ticket->isOverdue())
     </tr>
 </table>
 <br>
-<?php
-foreach (DynamicFormEntry::forTicket($ticket->getId()) as $form) {
-    $form->addMissingFields();
-    //Find fields to exclude if disabled by help topic
-    $disabled = Ticket::getMissingRequiredFields($ticket, true);
 
-    // Skip core fields shown earlier in the ticket view
-    // TODO: Rewrite getAnswers() so that one could write
-    //       ->getAnswers()->filter(not(array('field__name__in'=>
-    //           array('email', ...))));
-    $answers = $form->getAnswers()->exclude(Q::any(array(
-        'field__flags__hasbit' => DynamicFormField::FLAG_EXT_STORED,
-        'field__name__in' => array('subject', 'priority'),
-        'field__id__in' => $disabled,
-    )));
-    $displayed = array();
-    foreach($answers as $a) {
-        if (!$a->getField()->isVisibleToStaff())
-            continue;
-        $displayed[] = $a;
-    }
-    if (count($displayed) == 0)
-        continue;
-    ?>
-    <table class="ticket_info custom-data" cellspacing="0" cellpadding="0" width="940" border="0">
-    <thead>
-        <th colspan="2"><?php echo Format::htmlchars($form->getTitle()); ?></th>
-    </thead>
-    <tbody>
-<?php
-    foreach ($displayed as $a) {
-        $id =  $a->getLocal('id');
-        $label = $a->getLocal('label');
-        $field = $a->getField();
-        $config = $field->getConfiguration();
-        $html = isset($config['html']) ? $config['html'] : false;
-        $v = $html ? Format::striptags($a->display()) : $a->display();
-        $class = (Format::striptags($v)) ? '' : 'class="faded"';
-        $clean = (Format::striptags($v))
-                ? ($html ? Format::striptags($v) : $v)
-                : '&mdash;' . __('Empty') .  '&mdash;';
-        $isFile = ($field instanceof FileUploadField);
-        $url = "#tickets/".$ticket->getId()."/field/".$id;
-?>
-        <tr>
-            <td width="200"><?php echo Format::htmlchars($label); ?>:</td>
-            <td id="<?php echo sprintf('inline-answer-%s', $field->getId()); ?>">
-            <?php if ($role->hasPerm(Ticket::PERM_EDIT)
-                    && $field->isEditableToStaff()) {
-                    $isEmpty = strpos($v, 'Empty') || ($v == '');
-                    if ($isFile && !$isEmpty) {
-                        echo sprintf('<span id="field_%s" %s >%s</span><br>', $id,
-                            $class,
-                            $clean);
-                    }
-                    $title = ($html && !$isEmpty) ? __('View Content') : __('Update');
-                    $href = $url.(($html && !$isEmpty) ? '/view' : '/edit');
-                         ?>
-                  <a class="inline-edit" data-placement="bottom" data-toggle="tooltip" title="<?php echo $title; ?>"
-                      href="<?php echo $href; ?>">
-                  <?php
-                    if ($isFile && !$isEmpty) {
-                      echo "<i class=\"icon-edit\"></i>";
-                    } elseif (strlen($v) > 200) {
-                      $clean = Format::truncate($v, 200);
-                      echo sprintf('<span id="field_%s" %s >%s</span>', $id, $class, $clean);
-                      echo "<br><i class=\"icon-edit\"></i>";
-                    } else
-                        echo sprintf('<span id="field_%s" %s >%s</span>', $id, $class, $clean);
-
-                    $a = $field->getAnswer();
-                    $hint = ($field->isRequiredForClose() && $a && !$a->getValue() && get_class($field) != 'BooleanField') ?
-                        sprintf('<i class="icon-warning-sign help-tip warning field-label" data-title="%s" data-content="%s"
-                        /></i>', __('Required to close ticket'),
-                        __('Data is required in this field in order to close the related ticket')) : '';
-                    echo $hint;
-                  ?>
-              </a>
-            <?php
-            } else {
-                echo $clean;
-            } ?>
-            </td>
-        </tr>
-<?php } ?>
-    </tbody>
-    </table>
-<?php } ?>
-<div class="clear"></div>
-
-<?php
-$tcount = $ticket->getThreadEntries($types) ? $ticket->getThreadEntries($types)->count() : 0;
-?>
-<ul  class="tabs clean threads" id="ticket_tabs" >
-    <li class="active"><a id="ticket-thread-tab" href="#ticket_thread"><?php
-        echo sprintf(__('Ticket Thread (%d)'), $tcount); ?></a></li>
-    <li><a id="ticket-tasks-tab" href="#tasks"
-            data-url="<?php
-        echo sprintf('#tickets/%d/tasks', $ticket->getId()); ?>"><?php
-        echo __('Tasks');
-        if ($ticket->getNumTasks())
-            echo sprintf('&nbsp;(<span id="ticket-tasks-count">%d</span>)', $ticket->getNumTasks());
-        ?></a></li>
-    <?php
-    if ((count($children) != 0 || $ticket->isChild())) { ?>
-    <li><a href="#relations" id="ticket-relations-tab"
-        data-url="<?php
-        echo sprintf('#tickets/%d/relations', $ticket->getId()); ?>"
-        ><?php echo __('Related Tickets');
-        if (count($children))
-            echo sprintf('&nbsp;(<span id="ticket-relations-count">%d</span>)', count($children));
-        elseif ($ticket->isChild())
-            echo sprintf('&nbsp;(<span id="ticket-relations-count">%d</span>)', 1);
-        ?></a></li>
-    <?php
-    }
-    ?>
-
-</ul>
-
-<div id="ticket_tabs_container">
-<div id="ticket_thread" class="tab_content">
-
-<?php
-    // Render ticket thread
-    if ($thread)
-        $thread->render(
-                array('M', 'R', 'N'),
-                array(
-                    'html-id'   => 'ticketThread',
-                    'mode'      => Thread::MODE_STAFF,
-                    'sort'      => $thisstaff->thread_view_order
-                    )
-                );
-?>
-<div class="clear"></div>
 <?php
 if ($errors['err'] && isset($_POST['a'])) {
     // Reflect errors back to the tab.
@@ -811,6 +676,8 @@ if ($errors['err'] && isset($_POST['a'])) {
     <div id="msg_warning"><?php echo $warn; ?></div>
 <?php
 } ?>
+
+
 
 <div class="sticky bar stop actions" id="response_options"
 >
@@ -1327,8 +1194,157 @@ if ($errors['err'] && isset($_POST['a'])) {
    </form>
    <?php } ?>
  </div>
- </div>
-</div>
+ 
+
+<br>
+<br>
+<br>
+
+
+<?php
+foreach (DynamicFormEntry::forTicket($ticket->getId()) as $form) {
+    $form->addMissingFields();
+    //Find fields to exclude if disabled by help topic
+    $disabled = Ticket::getMissingRequiredFields($ticket, true);
+
+    // Skip core fields shown earlier in the ticket view
+    // TODO: Rewrite getAnswers() so that one could write
+    //       ->getAnswers()->filter(not(array('field__name__in'=>
+    //           array('email', ...))));
+    $answers = $form->getAnswers()->exclude(Q::any(array(
+        'field__flags__hasbit' => DynamicFormField::FLAG_EXT_STORED,
+        'field__name__in' => array('subject', 'priority'),
+        'field__id__in' => $disabled,
+    )));
+    $displayed = array();
+    foreach($answers as $a) {
+        if (!$a->getField()->isVisibleToStaff())
+            continue;
+        $displayed[] = $a;
+    }
+    if (count($displayed) == 0)
+        continue;
+    ?>
+    <table class="ticket_info custom-data" cellspacing="0" cellpadding="0" width="940" border="0">
+    <thead>
+        <th colspan="2"><?php echo Format::htmlchars($form->getTitle()); ?></th>
+    </thead>
+    <tbody>
+<?php
+    foreach ($displayed as $a) {
+        $id =  $a->getLocal('id');
+        $label = $a->getLocal('label');
+        $field = $a->getField();
+        $config = $field->getConfiguration();
+        $html = isset($config['html']) ? $config['html'] : false;
+        $v = $html ? Format::striptags($a->display()) : $a->display();
+        $class = (Format::striptags($v)) ? '' : 'class="faded"';
+        $clean = (Format::striptags($v))
+                ? ($html ? Format::striptags($v) : $v)
+                : '&mdash;' . __('Empty') .  '&mdash;';
+        $isFile = ($field instanceof FileUploadField);
+        $url = "#tickets/".$ticket->getId()."/field/".$id;
+?>
+        <tr>
+            <td width="200"><?php echo Format::htmlchars($label); ?>:</td>
+            <td id="<?php echo sprintf('inline-answer-%s', $field->getId()); ?>">
+            <?php if ($role->hasPerm(Ticket::PERM_EDIT)
+                    && $field->isEditableToStaff()) {
+                    $isEmpty = strpos($v, 'Empty') || ($v == '');
+                    if ($isFile && !$isEmpty) {
+                        echo sprintf('<span id="field_%s" %s >%s</span><br>', $id,
+                            $class,
+                            $clean);
+                    }
+                    $title = ($html && !$isEmpty) ? __('View Content') : __('Update');
+                    $href = $url.(($html && !$isEmpty) ? '/view' : '/edit');
+                         ?>
+                  <a class="inline-edit" data-placement="bottom" data-toggle="tooltip" title="<?php echo $title; ?>"
+                      href="<?php echo $href; ?>">
+                  <?php
+                    if ($isFile && !$isEmpty) {
+                      echo "<i class=\"icon-edit\"></i>";
+                    } elseif (strlen($v) > 200) {
+                      $clean = Format::truncate($v, 200);
+                      echo sprintf('<span id="field_%s" %s >%s</span>', $id, $class, $clean);
+                      echo "<br><i class=\"icon-edit\"></i>";
+                    } else
+                        echo sprintf('<span id="field_%s" %s >%s</span>', $id, $class, $clean);
+
+                    $a = $field->getAnswer();
+                    $hint = ($field->isRequiredForClose() && $a && !$a->getValue() && get_class($field) != 'BooleanField') ?
+                        sprintf('<i class="icon-warning-sign help-tip warning field-label" data-title="%s" data-content="%s"
+                        /></i>', __('Required to close ticket'),
+                        __('Data is required in this field in order to close the related ticket')) : '';
+                    echo $hint;
+                  ?>
+              </a>
+            <?php
+            } else {
+                echo $clean;
+            } ?>
+            </td>
+        </tr>
+<?php } ?>
+    </tbody>
+    </table>
+<?php } ?>
+<div class="clear"></div>
+
+<?php
+$tcount = $ticket->getThreadEntries($types) ? $ticket->getThreadEntries($types)->count() : 0;
+?>
+<ul  class="tabs clean threads" id="ticket_tabs" >
+    <li class="active"><a id="ticket-thread-tab" href="#ticket_thread"><?php
+        echo sprintf(__('Ticket Thread (%d)'), $tcount); ?></a></li>
+    <li><a id="ticket-tasks-tab" href="#tasks"
+            data-url="<?php
+        echo sprintf('#tickets/%d/tasks', $ticket->getId()); ?>"><?php
+        echo __('Tasks');
+        if ($ticket->getNumTasks())
+            echo sprintf('&nbsp;(<span id="ticket-tasks-count">%d</span>)', $ticket->getNumTasks());
+        ?></a></li>
+    <?php
+    if ((count($children) != 0 || $ticket->isChild())) { ?>
+    <li><a href="#relations" id="ticket-relations-tab"
+        data-url="<?php
+        echo sprintf('#tickets/%d/relations', $ticket->getId()); ?>"
+        ><?php echo __('Related Tickets');
+        if (count($children))
+            echo sprintf('&nbsp;(<span id="ticket-relations-count">%d</span>)', count($children));
+        elseif ($ticket->isChild())
+            echo sprintf('&nbsp;(<span id="ticket-relations-count">%d</span>)', 1);
+        ?></a></li>
+    <?php
+    }
+    ?>
+
+</ul>
+
+<div id="ticket_tabs_container">
+<div id="ticket_thread" class="tab_content">
+
+<?php
+    // Render ticket thread
+    if ($thread)
+        $thread->render(
+                array('M', 'R', 'N'),
+                array(
+                    'html-id'   => 'ticketThread',
+                    'mode'      => Thread::MODE_STAFF,
+                    'sort'      => $thisstaff->thread_view_order
+                    )
+                );
+?>
+<div class="clear"></div>
+
+
+
+
+
+
+
+
 <div style="display:none;" class="dialog" id="print-options">
     <h3><?php echo __('Ticket Print Options');?></h3>
     <a class="close" href=""><i class="icon-remove-circle"></i></a>
